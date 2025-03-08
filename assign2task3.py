@@ -1,4 +1,3 @@
-
 import streamlit as st
 import os
 import nest_asyncio
@@ -8,7 +7,7 @@ from llama_index.embeddings.mistralai import MistralAIEmbedding
 from dotenv import load_dotenv
 
 # Load environment variables
-os.environ["MISTRAL_API_KEY"] = "NXyKdE5JFehmTjXn1RtYyVBOlMzPLGyB"
+os.environ["MISTRAL_API_KEY"] = "WxuATixGO6kp5LQ2ilW1jLRiD5IFibV8"
 load_dotenv()
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
 
@@ -52,7 +51,7 @@ if "relevant_policies" not in st.session_state:
     st.session_state.relevant_query_engine = None
 
 st.write("Enter your queries (first question: get relevant policies, subsequent questions: ask about them):")
-user_input = st.text_area("Enter your prompt:", height=200)
+user_input = st.text_input("Enter your prompt:", height=100)
 
 if user_input:
     inputs = user_input.split("\n")
