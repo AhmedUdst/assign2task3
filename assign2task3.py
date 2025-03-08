@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 import nest_asyncio
-from llama_index.core import VectorStoreIndex, Settings
+from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, Settings, Document
 from llama_index.llms.mistralai import MistralAI
 from llama_index.embeddings.mistralai import MistralAIEmbedding
 from dotenv import load_dotenv
@@ -17,39 +17,44 @@ nest_asyncio.apply()
 # Streamlit UI
 st.title("Agentic RAG with Mistral AI")
 
-# Define policy URLs
+# Define policy URLs and content (for indexing purposes)
+policy_texts = {
+    "Student Conduct Policy": "This policy governs student behavior and disciplinary actions...",
+    "Academic Schedule Policy": "This policy outlines the academic calendar and scheduling rules...",
+    "Student Attendance Policy": "This policy explains attendance requirements and consequences of absenteeism...",
+    "Student Appeals Policy": "This policy details the process for students to appeal decisions...",
+    "Graduation Policy": "This policy describes graduation requirements and processes...",
+    "Academic Standing Policy": "This policy defines academic performance standards...",
+    "Transfer Policy": "This policy outlines the transfer of credits and student mobility...",
+    "Admissions Policy": "This policy sets the criteria and procedures for student admissions...",
+    "Final Grade Policy": "This policy explains the grading system and final grade calculations...",
+    "Registration Policy": "This policy provides guidelines for course registration and enrollment...",
+}
+
 policy_urls = {
-    "Student Conduct Policy": "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/student-conduct-policy", 
-    "Academic Schedule Policy": "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/udst-policies-and-procedures/academic-schedule-policy", 
-    "Student Attendance Policy": "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/student-attendance-policy", 
-    "Student Appeals Policy": "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/student-appeals-policy",
-    "Graduation Policy": "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/udst-policies-and-procedures/graduation-policy",
-    "Academic Standing Policy": "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/academic-standing-policy",
-    "Transfer Policy": "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/transfer-policy", 
-    "Admissions Policy": "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/admissions-policy", 
-    "Final Grade Policy": "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/final-grade-policy", 
-    "Registration Policy": "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/registration-policy", 
+    name: f"https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/{name.lower().replace(' ', '-')}"
+    for name in policy_texts.keys()
 }
 
 # Set LLM globally
 Settings.llm = MistralAI(api_key=MISTRAL_API_KEY)
-
-# Set Embedding Model to Mistral
 Settings.embed_model = MistralAIEmbedding(api_key=MISTRAL_API_KEY)
+
+# Create documents for indexing
+documents = [Document(text=policy_texts[name], metadata={"name": name}) for name in policy_texts]
+index = VectorStoreIndex.from_documents(documents)
+query_engine = index.as_query_engine()
 
 st.write("Enter a prompt to get the relevant policy name:")
 first_prompt = st.text_input("Enter your first prompt:")
 
 if first_prompt:
-    # Simulate query engine response with a best-matching policy
-    policy_name = max(policy_urls.keys(), key=lambda name: name.lower() in first_prompt.lower())
+    policy_name = max(policy_texts.keys(), key=lambda name: name.lower() in first_prompt.lower())
     st.write("Relevant Policy Name:", policy_name)
     st.write("Policy URL:", policy_urls[policy_name])
     
     second_prompt = st.text_input("Enter your second prompt for more details:")
     
     if second_prompt:
-        # Simulate answering any relevant question about the policy
-        query_engine = VectorStoreIndex([]).as_query_engine()
         response = query_engine.query(second_prompt)
-        st.write("Response:", response)
+        st.write("Response:", response.response)
