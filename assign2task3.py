@@ -1,3 +1,4 @@
+
 import streamlit as st
 import os
 import nest_asyncio
@@ -48,7 +49,7 @@ query_engine = index.as_query_engine()
 # Initialize session state for relevant policies
 if "relevant_policies" not in st.session_state:
     st.session_state.relevant_policies = []
-    st.session_state.relevant_documents = None
+    st.session_state.relevant_query_engine = None
 
 st.write("Enter your queries (first question: get relevant policies, subsequent questions: ask about them):")
 user_input = st.text_area("Enter your prompt:", height=200)
@@ -65,22 +66,22 @@ if user_input:
         if i == 0:
             # Step 1: Find relevant policies
             policy_query_lower = query.lower()
-            relevant_policies = [name for name in policy_texts.keys() if any(word in policy_query_lower for word in name.lower().split())]
+            relevant_policies = [name for name in policy_texts.keys() if policy_query_lower in name.lower()]
             st.session_state.relevant_policies = relevant_policies
             
             if relevant_policies:
                 policy_list = "\n".join([f"- {policy_name}: {policy_urls[policy_name]}" for policy_name in relevant_policies])
                 responses.append(f"**Relevant Policies:**\n{policy_list}")
                 
-                # Create a new index with only relevant documents
+                # Create a new query engine only with relevant documents
                 relevant_documents = [Document(text=policy_texts[name], metadata={"name": name}) for name in relevant_policies]
-                st.session_state.relevant_documents = VectorStoreIndex.from_documents(relevant_documents).as_query_engine()
+                st.session_state.relevant_query_engine = VectorStoreIndex.from_documents(relevant_documents).as_query_engine()
             else:
                 responses.append("No matching policies found.")
         else:
             # Step 2: Answer specific policy-related question using previously retrieved policies
-            if st.session_state.relevant_policies and st.session_state.relevant_documents:
-                response = st.session_state.relevant_documents.query(query)
+            if st.session_state.relevant_policies and st.session_state.relevant_query_engine:
+                response = st.session_state.relevant_query_engine.query(query)
                 responses.append(f"**Response:** {response.response}")
             else:
                 responses.append("No relevant policies found to answer this question.")
