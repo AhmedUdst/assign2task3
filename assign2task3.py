@@ -5,7 +5,7 @@ import numpy as np
 from llama_index.core import SimpleDirectoryReader
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.llms.mistralai import MistralAI
-from llama_index.embeddings.mistralai import MistralEmbedding as MistralAIEmbedding
+from llama_index.embeddings.mistralai import MistralEmbedding
 from bs4 import BeautifulSoup
 import requests
 
