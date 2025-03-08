@@ -1,30 +1,27 @@
 import streamlit as st
 import faiss
 import numpy as np
-from mistralai import Mistral, UserMessage
+from llama_index.llms import LlamaCPP
 from bs4 import BeautifulSoup
 import requests
 import sys
 
 # Ensure Python version compatibility
-#REQUIRED_PYTHON_VERSION = (3, 7)
-#MAX_PYTHON_VERSION = (3, 10)
-#if not (REQUIRED_PYTHON_VERSION <= sys.version_info[:2] <= MAX_PYTHON_VERSION):
-#    raise RuntimeError("This script requires Python >=3.7 and <3.11")
+REQUIRED_PYTHON_VERSION = (3, 7)
+MAX_PYTHON_VERSION = (3, 10)
+if not (REQUIRED_PYTHON_VERSION <= sys.version_info[:2] <= MAX_PYTHON_VERSION):
+    raise RuntimeError("This script requires Python >=3.7 and <3.11")
 
-# API Key Setup
-API_KEY = "xjCgy80GBjYF4qDbKke2ZI98Q8jxoinY"
+# Llama Model Setup
+llm = LlamaCPP(model_path="path/to/llama/model")
 
 def get_text_embedding(list_txt_chunks):
-    client = Mistral(api_key=API_KEY)
-    embeddings_batch_response = client.embeddings.create(model="mistral-embed", inputs=list_txt_chunks)
-    return embeddings_batch_response.data
+    # Placeholder for Llama embedding function (if needed)
+    return np.random.rand(len(list_txt_chunks), 768)  # Mock embedding
 
-def mistral_chat(user_message):
-    client = Mistral(api_key=API_KEY)
-    messages = [UserMessage(content=user_message)]
-    chat_response = client.chat.complete(model="mistral-large-latest", messages=messages)
-    return chat_response.choices[0].message.content
+def llama_chat(user_message):
+    response = llm(user_message)
+    return response["choices"][0]["text"]
 
 # Load Policy Data
 def load_policy_data(url):
@@ -39,14 +36,14 @@ def load_policy_data(url):
 # Build FAISS Index
 def build_faiss_index(text_chunks):
     text_embeddings = get_text_embedding(text_chunks)
-    embeddings = np.array([emb.embedding for emb in text_embeddings])
-    index = faiss.IndexFlatL2(len(embeddings[0]))
+    embeddings = np.array(text_embeddings)
+    index = faiss.IndexFlatL2(embeddings.shape[1])
     index.add(embeddings)
     return index, text_chunks
 
 # Retrieve Relevant Chunks
 def retrieve_relevant_chunks(query, index, text_chunks, top_k=2):
-    query_embedding = np.array([get_text_embedding([query])[0].embedding])
+    query_embedding = np.array([get_text_embedding([query])[0]])
     D, I = index.search(query_embedding, k=top_k)
     return [text_chunks[i] for i in I.tolist()[0] if i < len(text_chunks)]
 
@@ -58,10 +55,10 @@ def classify_intent(query, policy_descriptions):
     Determine which policy is most relevant to the following question: {query}
     Respond with only the policy name.
     """
-    return mistral_chat(prompt).strip()
+    return llama_chat(prompt).strip()
 
 # Streamlit UI
-st.title("UDST Policy Chatbot - Agentic RAG")
+st.title("UDST Policy Chatbot - Agentic RAG (Llama)")
 
 # Policy URLs (Expanded to 20 policies)
 policy_urls = {
@@ -75,7 +72,6 @@ policy_urls = {
     "Admissions Policy": "https://www.udst.edu.qa/.../admissions-policy",
     "Final Grade Policy": "https://www.udst.edu.qa/.../final-grade-policy",
     "Registration Policy": "https://www.udst.edu.qa/.../registration-policy",
-    # Add more policies up to 20
 }
 
 # Load Policies on Demand
@@ -105,12 +101,9 @@ if st.button("Get Answer"):
                 {retrieved_chunks}
                 Given the context, answer the query: {query}
                 """
-                response = mistral_chat(prompt)
+                response = llama_chat(prompt)
                 st.text_area("Answer:", response, height=200)
             else:
                 st.error("No relevant information found in the selected policy.")
     else:
         st.error("No relevant policy found.")
-
-# Ensure Streamlit runs properly with correct dependencies
-st.write("Ensure you have the correct Python version and all dependencies installed. If issues persist, try updating pip using: \"pip install --upgrade pip\" and reinstall dependencies with \"pip install -r requirements.txt\"")
