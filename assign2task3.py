@@ -1,12 +1,13 @@
 import streamlit as st
 import os
 import nest_asyncio
-from llama_index.core import SimpleDirectoryReader, ServiceContext, VectorStoreIndex
+from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, Settings
 from llama_index.llms.mistralai import MistralAI
+from llama_index.embeddings.mistralai import MistralAIEmbedding
 from dotenv import load_dotenv
 
-os.environ["MISTRAL_API_KEY"] = "xjCgy80GBjYF4qDbKke2ZI98Q8jxoinY"
 # Load environment variables
+os.environ["MISTRAL_API_KEY"] = "xjCgy80GBjYF4qDbKke2ZI98Q8jxoinY"
 load_dotenv()
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
 
@@ -29,16 +30,15 @@ if uploaded_file:
     reader = SimpleDirectoryReader(input_files=[file_path])
     documents = reader.load_data()
     
-    llm = MistralAI(api_key=MISTRAL_API_KEY)
-    from llama_index.core import Settings
-
-    # Set the LLM globally using Settings
+    # Set LLM globally
     Settings.llm = MistralAI(api_key=MISTRAL_API_KEY)
-    
+
+    # Set Embedding Model to Mistral (instead of OpenAI)
+    Settings.embed_model = MistralAIEmbedding(api_key=MISTRAL_API_KEY)
+
     # Create an index
     index = VectorStoreIndex.from_documents(documents)
 
-    
     st.write("Document indexed successfully. Enter a query below:")
     query = st.text_input("Ask a question about the document:")
     
