@@ -21,16 +21,19 @@ def mistral_chat(user_message):
 
 # Load Policy Data
 def load_policy_data(url):
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, "html.parser")
-    text = soup.get_text()
-    return text
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, "html.parser")
+        return soup.get_text()
+    except requests.exceptions.RequestException as e:
+        return f"Error loading policy: {str(e)}"
 
 # Build FAISS Index
 def build_faiss_index(text_chunks):
     text_embeddings = get_text_embedding(text_chunks)
     embeddings = np.array([emb.embedding for emb in text_embeddings])
-    index = faiss.IndexFlatL2(len(text_embeddings[0].embedding))
+    index = faiss.IndexFlatL2(len(embeddings[0]))
     index.add(embeddings)
     return index, text_chunks
 
@@ -38,7 +41,7 @@ def build_faiss_index(text_chunks):
 def retrieve_relevant_chunks(query, index, text_chunks, top_k=2):
     query_embedding = np.array([get_text_embedding([query])[0].embedding])
     D, I = index.search(query_embedding, k=top_k)
-    return [text_chunks[i] for i in I.tolist()[0]]
+    return [text_chunks[i] for i in I.tolist()[0] if i < len(text_chunks)]
 
 # Intent Classification
 def classify_intent(query, policy_descriptions):
@@ -48,7 +51,7 @@ def classify_intent(query, policy_descriptions):
     Determine which policy is most relevant to the following question: {query}
     Respond with only the policy name.
     """
-    return mistral_chat(prompt)
+    return mistral_chat(prompt).strip()
 
 # Streamlit UI
 st.title("UDST Policy Chatbot - Agentic RAG")
@@ -73,7 +76,7 @@ if "policy_data" not in st.session_state:
     st.session_state["policy_data"] = {}
     for policy, url in policy_urls.items():
         st.session_state["policy_data"][policy] = load_policy_data(url)
-        
+
 # Intent Classification and Query Processing
 query = st.text_input("Enter your question:")
 if st.button("Get Answer"):
@@ -81,17 +84,23 @@ if st.button("Get Answer"):
     selected_policy = classify_intent(query, policy_descriptions)
     
     if selected_policy in policy_urls:
-        policy_text = st.session_state["policy_data"][selected_policy]
-        chunks = [policy_text[i:i+512] for i in range(0, len(policy_text), 512)]
-        index, chunks = build_faiss_index(chunks)
-        
-        retrieved_chunks = retrieve_relevant_chunks(query, index, chunks)
-        prompt = f"""
-        Context information:
-        {retrieved_chunks}
-        Given the context, answer the query: {query}
-        """
-        response = mistral_chat(prompt)
-        st.text_area("Answer:", response, height=200)
+        policy_text = st.session_state["policy_data"].get(selected_policy, "Error: Policy data not available.")
+        if "Error" in policy_text:
+            st.error(policy_text)
+        else:
+            chunks = [policy_text[i:i+512] for i in range(0, len(policy_text), 512)]
+            index, chunks = build_faiss_index(chunks)
+            retrieved_chunks = retrieve_relevant_chunks(query, index, chunks)
+            
+            if retrieved_chunks:
+                prompt = f"""
+                Context information:
+                {retrieved_chunks}
+                Given the context, answer the query: {query}
+                """
+                response = mistral_chat(prompt)
+                st.text_area("Answer:", response, height=200)
+            else:
+                st.error("No relevant information found in the selected policy.")
     else:
         st.error("No relevant policy found.")
