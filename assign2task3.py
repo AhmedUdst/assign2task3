@@ -7,7 +7,7 @@ from llama_index.embeddings.mistralai import MistralAIEmbedding
 from dotenv import load_dotenv
 
 # Load environment variables
-os.environ["MISTRAL_API_KEY"] = "LsTDsPmjahnJz2Xlie33gaGnAOKx1IM6"
+os.environ["MISTRAL_API_KEY"] = "WxuATixGO6kp5LQ2ilW1jLRiD5IFibV8"
 load_dotenv()
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
 
@@ -45,19 +45,13 @@ documents = [Document(text=policy_texts[name], metadata={"name": name}) for name
 index = VectorStoreIndex.from_documents(documents)
 query_engine = index.as_query_engine()
 
-st.write("Enter a prompt to get relevant policies:")
+st.write("Enter a prompt to get the relevant policy name:")
 first_prompt = st.text_input("Enter your first prompt:")
 
 if first_prompt:
-    first_prompt_lower = first_prompt.lower()
-    relevant_policies = [name for name in policy_texts.keys() if any(word in first_prompt_lower for word in name.lower().split())]
-    
-    if relevant_policies:
-        st.write("Relevant Policies:")
-        for policy_name in relevant_policies:
-            st.write(f"- {policy_name}: {policy_urls[policy_name]}")
-    else:
-        st.write("No matching policies found.")
+    policy_name = max(policy_texts.keys(), key=lambda name: name.lower() in first_prompt.lower())
+    st.write("Relevant Policy Name:", policy_name)
+    st.write("Policy URL:", policy_urls[policy_name])
     
     second_prompt = st.text_input("Enter your second prompt for more details:")
     
