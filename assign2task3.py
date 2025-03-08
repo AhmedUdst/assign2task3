@@ -4,6 +4,11 @@ import numpy as np
 from mistralai import Mistral, UserMessage
 from bs4 import BeautifulSoup
 import requests
+import sys
+
+# Ensure Python version compatibility
+if not (sys.version_info >= (3, 7) and sys.version_info < (3, 11)):
+    raise RuntimeError("This script requires Python >=3.7 and <3.11")
 
 # API Key Setup
 API_KEY = "xjCgy80GBjYF4qDbKke2ZI98Q8jxoinY"
