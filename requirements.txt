@@ -1,7 +1,2 @@
 streamlit
-faiss-cpu
-mistralai
-beautifulsoup4
-requests
-numpy
-time
+sys
