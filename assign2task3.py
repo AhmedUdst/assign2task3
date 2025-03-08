@@ -51,7 +51,7 @@ if "relevant_policies" not in st.session_state:
     st.session_state.relevant_query_engine = None
 
 st.write("Enter your queries (first question: get relevant policies, subsequent questions: ask about them):")
-user_input = st.text_input("Enter your prompt:", height=100)
+user_input = st.text_input("Enter your prompt:")
 
 if user_input:
     inputs = user_input.split("\n")
