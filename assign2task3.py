@@ -1,89 +1,46 @@
 import streamlit as st
-import os
-import nest_asyncio
-from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, Settings, Document
+import requests
+from llama_index.core import SimpleWebPageReader
 from llama_index.llms.mistralai import MistralAI
+from llama_index.core import Settings, VectorStoreIndex
 from llama_index.embeddings.mistralai import MistralAIEmbedding
-from dotenv import load_dotenv
-
-# Load environment variables
-os.environ["MISTRAL_API_KEY"] = "WxuATixGO6kp5LQ2ilW1jLRiD5IFibV8"
-load_dotenv()
-MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
-
-# Apply nest_asyncio (for running async tasks in notebooks if needed)
-nest_asyncio.apply()
 
 # Streamlit UI
-st.title("Agentic RAG with Mistral AI")
+st.title("UDS Policies Query Assistant")
+st.write("Search and retrieve relevant UDS policies or ask any question.")
 
-# Define policy URLs and content (for indexing purposes)
-policy_texts = {
-    "Student Conduct Policy": "This policy governs student behavior and disciplinary actions...",
-    "Academic Schedule Policy": "This policy outlines the academic calendar and scheduling rules...",
-    "Student Attendance Policy": "This policy explains attendance requirements and consequences of absenteeism...",
-    "Student Appeals Policy": "This policy details the process for students to appeal decisions...",
-    "Graduation Policy": "This policy describes graduation requirements and processes...",
-    "Academic Standing Policy": "This policy defines academic performance standards...",
-    "Transfer Policy": "This policy outlines the transfer of credits and student mobility...",
-    "Admissions Policy": "This policy sets the criteria and procedures for student admissions...",
-    "Final Grade Policy": "This policy explains the grading system and final grade calculations...",
-    "Registration Policy": "This policy provides guidelines for course registration and enrollment...",
-}
+# User Input
+query = st.text_input("Enter your query:")
 
-policy_urls = {
-    name: f"https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/{name.lower().replace(' ', '-')}"
-    for name in policy_texts.keys()
-}
+# Fetch UDS policies from web pages
+uds_policy_urls = [
+    "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/academic-annual-leave-policy", 
+    "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/final-grade-policy"# Adjust with actual policy URLs
+]
 
-# Set LLM globally
-Settings.llm = MistralAI(api_key=MISTRAL_API_KEY)
-Settings.embed_model = MistralAIEmbedding(api_key=MISTRAL_API_KEY)
+st.write("Fetching UDS policies...")
+documents = SimpleWebPageReader(html_to_text=True).load_data(uds_policy_urls)
+st.success("UDS policies loaded successfully!")
 
-# Create documents for indexing
-documents = [Document(text=policy_texts[name], metadata={"name": name}) for name in policy_texts]
-index = VectorStoreIndex.from_documents(documents)
-query_engine = index.as_query_engine()
+# Initialize LLM & Embedding
+api_key = "LsTDsPmjahnJz2Xlie33gaGnAOKx1IM6"
+llm = MistralAI(api_key=api_key)
+Settings.llm = llm
+Settings.embed_model = MistralAIEmbedding(model_name="mistral-embed", api_key=api_key)
 
-# Initialize session state for relevant policies
-if "relevant_policies" not in st.session_state:
-    st.session_state.relevant_policies = []
-    st.session_state.relevant_query_engine = None
+# Indexing UDS policies
+nodes = [doc.get_text() for doc in documents]
+vector_index = VectorStoreIndex(nodes)
+query_engine = vector_index.as_query_engine()
 
-st.write("Enter your queries (first question: get relevant policies, subsequent questions: ask about them):")
-user_input = st.text_input("Enter your prompt:")
-
-if user_input:
-    inputs = user_input.split("\n")
-    responses = []
+# Query Execution
+if query:
+    response = query_engine.query(query)
+    st.subheader("Response:")
+    st.write(str(response))
     
-    for i, query in enumerate(inputs):
-        query = query.strip()
-        if not query:
-            continue
-        
-        if i == 0:
-            # Step 1: Find relevant policies
-            policy_query_lower = query.lower()
-            relevant_policies = [name for name in policy_texts.keys() if policy_query_lower in name.lower()]
-            st.session_state.relevant_policies = relevant_policies
-            
-            if relevant_policies:
-                policy_list = "\n".join([f"- {policy_name}: {policy_urls[policy_name]}" for policy_name in relevant_policies])
-                responses.append(f"**Relevant Policies:**\n{policy_list}")
-                
-                # Create a new query engine only with relevant documents
-                relevant_documents = [Document(text=policy_texts[name], metadata={"name": name}) for name in relevant_policies]
-                st.session_state.relevant_query_engine = VectorStoreIndex.from_documents(relevant_documents).as_query_engine()
-            else:
-                responses.append("No matching policies found.")
-        else:
-            # Step 2: Answer specific policy-related question using previously retrieved policies
-            if st.session_state.relevant_policies and st.session_state.relevant_query_engine:
-                response = st.session_state.relevant_query_engine.query(query)
-                responses.append(f"**Response:** {response.response}")
-            else:
-                responses.append("No relevant policies found to answer this question.")
-    
-    for response in responses:
-        st.write(response)
+# Deployment Notes
+st.sidebar.header("Deployment Instructions")
+st.sidebar.markdown("1. Run `streamlit run app.py` to start locally.")
+st.sidebar.markdown("2. Deploy on GitHub by including `requirements.txt` and using Streamlit Sharing.")
+st.sidebar.markdown("3. API Key is hardcoded for now but should be securely managed in deployment.")
