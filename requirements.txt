@@ -1,1 +1,8 @@
-
+streamlit
+faiss-cpu
+numpy
+requests
+beautifulsoup4
+llama-index
+llama-index-llms-mistralai
+llama-index-embeddings-mistralai
