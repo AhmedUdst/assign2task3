@@ -8,7 +8,7 @@ from llama_index.llms.mistralai import MistralAI
 from llama_index.embeddings.mistralai import MistralEmbeddingModel
 from bs4 import BeautifulSoup
 import requests
-pip install --upgrade llama-index
+!pip install --upgrade llama-index
 # Set API Key
 os.environ["MISTRAL_API_KEY"] = "xjCgy80GBjYF4qDbKke2ZI98Q8jxoinY"
 api_key = os.getenv("MISTRAL_API_KEY")
