@@ -49,4 +49,7 @@ if first_prompt:
     second_prompt = st.text_input("Enter your second prompt for more details:")
     
     if second_prompt:
-        st.write("For more details, visit the policy URL above.")
+        # Simulate answering any relevant question about the policy
+        query_engine = VectorStoreIndex([]).as_query_engine()
+        response = query_engine.query(second_prompt)
+        st.write("Response:", response)
