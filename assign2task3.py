@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
-MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
+MISTRAL_API_KEY = os.getenv("xjCgy80GBjYF4qDbKke2ZI98Q8jxoinY")
 
 # Apply nest_asyncio (for running async tasks in notebooks if needed)
 nest_asyncio.apply()
