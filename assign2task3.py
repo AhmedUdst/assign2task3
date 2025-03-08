@@ -45,27 +45,41 @@ documents = [Document(text=policy_texts[name], metadata={"name": name}) for name
 index = VectorStoreIndex.from_documents(documents)
 query_engine = index.as_query_engine()
 
-# Step 1: Get relevant policies
-st.write("Enter a prompt to get relevant policies:")
-policy_query = st.text_input("Enter your first prompt:")
+# Consecutive prompting in a single input box
+st.write("Enter your queries (first question: get relevant policies, subsequent questions: ask about them):")
+user_input = st.text_area("Enter your prompt:", height=200)
 
-relevant_policies = []
-if policy_query:
-    policy_query_lower = policy_query.lower()
-    relevant_policies = [name for name in policy_texts.keys() if any(word in policy_query_lower for word in name.lower().split())]
+if user_input:
+    inputs = user_input.split("\n")
+    responses = []
+    relevant_policies = []
     
-    if relevant_policies:
-        st.write("Relevant Policies:")
-        for policy_name in relevant_policies:
-            st.write(f"- {policy_name}: {policy_urls[policy_name]}")
-    else:
-        st.write("No matching policies found.")
-
-# Step 2: Ask detailed questions based on the retrieved policies
-if relevant_policies:
-    st.write("Ask a question related to the above policies:")
-    detail_query = st.text_input("Enter your second prompt:")
+    for i, query in enumerate(inputs):
+        query = query.strip()
+        if not query:
+            continue
+        
+        if i == 0:
+            # Step 1: Find relevant policies
+            policy_query_lower = query.lower()
+            relevant_policies = [name for name in policy_texts.keys() if any(word in policy_query_lower for word in name.lower().split())]
+            
+            if relevant_policies:
+                policy_list = "\n".join([f"- {policy_name}: {policy_urls[policy_name]}" for policy_name in relevant_policies])
+                responses.append(f"**Relevant Policies:**\n{policy_list}")
+            else:
+                responses.append("No matching policies found.")
+        else:
+            # Step 2: Answer specific policy-related question
+            if relevant_policies:
+                combined_text = " ".join([policy_texts[name] for name in relevant_policies])
+                relevant_documents = [Document(text=combined_text)]
+                temp_index = VectorStoreIndex.from_documents(relevant_documents)
+                temp_query_engine = temp_index.as_query_engine()
+                response = temp_query_engine.query(query)
+                responses.append(f"**Response:** {response.response}")
+            else:
+                responses.append("No relevant policies found to answer this question.")
     
-    if detail_query:
-        response = query_engine.query(detail_query)
-        st.write("Response:", response.response)
+    for response in responses:
+        st.write(response)
