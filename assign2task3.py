@@ -7,7 +7,9 @@ import requests
 import sys
 
 # Ensure Python version compatibility
-if not (sys.version_info >= (3, 7) and sys.version_info < (3, 11)):
+REQUIRED_PYTHON_VERSION = (3, 7)
+MAX_PYTHON_VERSION = (3, 10)
+if not (REQUIRED_PYTHON_VERSION <= sys.version_info[:2] <= MAX_PYTHON_VERSION):
     raise RuntimeError("This script requires Python >=3.7 and <3.11")
 
 # API Key Setup
@@ -38,7 +40,7 @@ def load_policy_data(url):
 def build_faiss_index(text_chunks):
     text_embeddings = get_text_embedding(text_chunks)
     embeddings = np.array([emb.embedding for emb in text_embeddings])
-    index = faiss.IndexFlatL2(embeddings.shape[1])  # Fix incorrect dimension reference
+    index = faiss.IndexFlatL2(len(embeddings[0]))
     index.add(embeddings)
     return index, text_chunks
 
