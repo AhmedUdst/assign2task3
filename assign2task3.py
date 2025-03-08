@@ -47,7 +47,7 @@ query_engine = index.as_query_engine()
 
 # Consecutive prompting in a single input box
 st.write("Enter your queries (first question: get relevant policies, subsequent questions: ask about them):")
-user_input = st.text_area("Enter your prompt:", height=200)
+user_input = st.text_area("Enter your prompt:")
 
 if user_input:
     inputs = user_input.split("\n")
