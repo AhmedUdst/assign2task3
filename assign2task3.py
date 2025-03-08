@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 import nest_asyncio
-from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, Settings
+from llama_index.core import VectorStoreIndex, Settings
 from llama_index.llms.mistralai import MistralAI
 from llama_index.embeddings.mistralai import MistralAIEmbedding
 from dotenv import load_dotenv
@@ -17,32 +17,36 @@ nest_asyncio.apply()
 # Streamlit UI
 st.title("Agentic RAG with Mistral AI")
 
-# File uploader
-uploaded_file = st.file_uploader("Upload a PDF document", type=["pdf"])
+# Define policy URLs
+policy_urls = {
+    "Student Conduct Policy": "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/student-conduct-policy", 
+    "Academic Schedule Policy": "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/udst-policies-and-procedures/academic-schedule-policy", 
+    "Student Attendance Policy": "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/student-attendance-policy", 
+    "Student Appeals Policy": "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/student-appeals-policy",
+    "Graduation Policy": "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/udst-policies-and-procedures/graduation-policy",
+    "Academic Standing Policy": "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/academic-standing-policy",
+    "Transfer Policy": "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/transfer-policy", 
+    "Admissions Policy": "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/admissions-policy", 
+    "Final Grade Policy": "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/final-grade-policy", 
+    "Registration Policy": "https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/registration-policy", 
+}
 
-if uploaded_file:
-    file_path = f"./{uploaded_file.name}"
-    with open(file_path, "wb") as f:
-        f.write(uploaded_file.getbuffer())
-    st.success(f"File {uploaded_file.name} uploaded successfully!")
+# Set LLM globally
+Settings.llm = MistralAI(api_key=MISTRAL_API_KEY)
+
+# Set Embedding Model to Mistral
+Settings.embed_model = MistralAIEmbedding(api_key=MISTRAL_API_KEY)
+
+st.write("Enter a prompt to get the relevant policy name:")
+first_prompt = st.text_input("Enter your first prompt:")
+
+if first_prompt:
+    # Simulate query engine response with a best-matching policy
+    policy_name = max(policy_urls.keys(), key=lambda name: name.lower() in first_prompt.lower())
+    st.write("Relevant Policy Name:", policy_name)
+    st.write("Policy URL:", policy_urls[policy_name])
     
-    # Process document
-    reader = SimpleDirectoryReader(input_files=[file_path])
-    documents = reader.load_data()
+    second_prompt = st.text_input("Enter your second prompt for more details:")
     
-    # Set LLM globally
-    Settings.llm = MistralAI(api_key=MISTRAL_API_KEY)
-
-    # Set Embedding Model to Mistral (instead of OpenAI)
-    Settings.embed_model = MistralAIEmbedding(api_key=MISTRAL_API_KEY)
-
-    # Create an index
-    index = VectorStoreIndex.from_documents(documents)
-
-    st.write("Document indexed successfully. Enter a query below:")
-    query = st.text_input("Ask a question about the document:")
-    
-    if query:
-        query_engine = index.as_query_engine()
-        response = query_engine.query(query)
-        st.write("Response:", response)
+    if second_prompt:
+        st.write("For more details, visit the policy URL above.")
