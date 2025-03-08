@@ -7,10 +7,10 @@ import requests
 import sys
 
 # Ensure Python version compatibility
-REQUIRED_PYTHON_VERSION = (3, 7)
-MAX_PYTHON_VERSION = (3, 10)
-if not (REQUIRED_PYTHON_VERSION <= sys.version_info[:2] <= MAX_PYTHON_VERSION):
-    raise RuntimeError("This script requires Python >=3.7 and <3.11")
+#REQUIRED_PYTHON_VERSION = (3, 7)
+#MAX_PYTHON_VERSION = (3, 10)
+#if not (REQUIRED_PYTHON_VERSION <= sys.version_info[:2] <= MAX_PYTHON_VERSION):
+#    raise RuntimeError("This script requires Python >=3.7 and <3.11")
 
 # API Key Setup
 API_KEY = "xjCgy80GBjYF4qDbKke2ZI98Q8jxoinY"
