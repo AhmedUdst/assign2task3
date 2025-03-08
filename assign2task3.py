@@ -48,6 +48,7 @@ query_engine = index.as_query_engine()
 # Initialize session state for relevant policies
 if "relevant_policies" not in st.session_state:
     st.session_state.relevant_policies = []
+    st.session_state.relevant_documents = None
 
 st.write("Enter your queries (first question: get relevant policies, subsequent questions: ask about them):")
 user_input = st.text_area("Enter your prompt:", height=200)
@@ -70,16 +71,16 @@ if user_input:
             if relevant_policies:
                 policy_list = "\n".join([f"- {policy_name}: {policy_urls[policy_name]}" for policy_name in relevant_policies])
                 responses.append(f"**Relevant Policies:**\n{policy_list}")
+                
+                # Create a new index with only relevant documents
+                relevant_documents = [Document(text=policy_texts[name], metadata={"name": name}) for name in relevant_policies]
+                st.session_state.relevant_documents = VectorStoreIndex.from_documents(relevant_documents).as_query_engine()
             else:
                 responses.append("No matching policies found.")
         else:
             # Step 2: Answer specific policy-related question using previously retrieved policies
-            if st.session_state.relevant_policies:
-                combined_text = " ".join([policy_texts[name] for name in st.session_state.relevant_policies])
-                relevant_documents = [Document(text=combined_text)]
-                temp_index = VectorStoreIndex.from_documents(relevant_documents)
-                temp_query_engine = temp_index.as_query_engine()
-                response = temp_query_engine.query(query)
+            if st.session_state.relevant_policies and st.session_state.relevant_documents:
+                response = st.session_state.relevant_documents.query(query)
                 responses.append(f"**Response:** {response.response}")
             else:
                 responses.append("No relevant policies found to answer this question.")
