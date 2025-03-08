@@ -5,7 +5,7 @@ from llama_index.core import SimpleDirectoryReader, ServiceContext, VectorStoreI
 from llama_index.llms.mistralai import MistralAI
 from dotenv import load_dotenv
 
-MISTRAL_API_KEY=xjCgy80GBjYF4qDbKke2ZI98Q8jxoinY
+MISTRAL_API_KEY="xjCgy80GBjYF4qDbKke2ZI98Q8jxoinY"
 # Load environment variables
 load_dotenv()
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
