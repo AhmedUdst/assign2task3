@@ -6,4 +6,4 @@ beautifulsoup4
 llama-index
 llama-index-llms-mistralai
 llama-index-embeddings-mistralai
-python-dotenv==1.0.0
+
