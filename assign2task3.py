@@ -7,7 +7,7 @@ from llama_index.embeddings.mistralai import MistralAIEmbedding
 from dotenv import load_dotenv
 
 # Load environment variables
-os.environ["MISTRAL_API_KEY"] = "LsTDsPmjahnJz2Xlie33gaGnAOKx1IM6"
+os.environ["MISTRAL_API_KEY"] = "WxuATixGO6kp5LQ2ilW1jLRiD5IFibV8"
 load_dotenv()
 MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
 
@@ -45,12 +45,14 @@ documents = [Document(text=policy_texts[name], metadata={"name": name}) for name
 index = VectorStoreIndex.from_documents(documents)
 query_engine = index.as_query_engine()
 
+# Step 1: Get relevant policies
 st.write("Enter a prompt to get relevant policies:")
-first_prompt = st.text_input("Enter your first prompt:")
+policy_query = st.text_input("Enter your first prompt:")
 
-if first_prompt:
-    first_prompt_lower = first_prompt.lower()
-    relevant_policies = [name for name in policy_texts.keys() if any(word in first_prompt_lower for word in name.lower().split())]
+relevant_policies = []
+if policy_query:
+    policy_query_lower = policy_query.lower()
+    relevant_policies = [name for name in policy_texts.keys() if any(word in policy_query_lower for word in name.lower().split())]
     
     if relevant_policies:
         st.write("Relevant Policies:")
@@ -58,9 +60,12 @@ if first_prompt:
             st.write(f"- {policy_name}: {policy_urls[policy_name]}")
     else:
         st.write("No matching policies found.")
+
+# Step 2: Ask detailed questions based on the retrieved policies
+if relevant_policies:
+    st.write("Ask a question related to the above policies:")
+    detail_query = st.text_input("Enter your second prompt:")
     
-    second_prompt = st.text_input("Enter your second prompt for more details:")
-    
-    if second_prompt:
-        response = query_engine.query(second_prompt)
+    if detail_query:
+        response = query_engine.query(detail_query)
         st.write("Response:", response.response)
