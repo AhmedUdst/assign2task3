@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 import nest_asyncio
-from llama_index import SimpleDirectoryReader, ServiceContext, VectorStoreIndex
+from llama_index.core import SimpleDirectoryReader, ServiceContext, VectorStoreIndex
 from llama_index.llms.mistralai import MistralAI
 from dotenv import load_dotenv
 
