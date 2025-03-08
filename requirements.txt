@@ -1,2 +1,6 @@
-streamlit
-sys
+faiss-cpu
+mistralai
+beautifulsoup4
+requests
+numpy
+time
