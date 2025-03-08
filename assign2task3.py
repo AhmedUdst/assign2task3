@@ -30,8 +30,14 @@ if uploaded_file:
     documents = reader.load_data()
     
     llm = MistralAI(api_key=MISTRAL_API_KEY)
-    service_context = ServiceContext.from_defaults(llm=llm)
-    index = VectorStoreIndex.from_documents(documents, service_context=service_context)
+    from llama_index.core import Settings
+
+    # Set the LLM globally using Settings
+    Settings.llm = MistralAI(api_key=MISTRAL_API_KEY)
+    
+    # Create an index
+    index = VectorStoreIndex.from_documents(documents)
+
     
     st.write("Document indexed successfully. Enter a query below:")
     query = st.text_input("Ask a question about the document:")
