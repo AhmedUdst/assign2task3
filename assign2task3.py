@@ -109,3 +109,6 @@ if st.button("Get Answer"):
                 st.error("No relevant information found in the selected policy.")
     else:
         st.error("No relevant policy found.")
+
+# Ensure Streamlit runs properly with correct dependencies
+st.write("Ensure you have the correct Python version and all dependencies installed. If issues persist, try updating pip using: \"pip install --upgrade pip\"")
