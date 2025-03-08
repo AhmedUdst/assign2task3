@@ -38,7 +38,7 @@ def load_policy_data(url):
 def build_faiss_index(text_chunks):
     text_embeddings = get_text_embedding(text_chunks)
     embeddings = np.array([emb.embedding for emb in text_embeddings])
-    index = faiss.IndexFlatL2(len(embeddings[0]))
+    index = faiss.IndexFlatL2(embeddings.shape[1])  # Fix incorrect dimension reference
     index.add(embeddings)
     return index, text_chunks
 
@@ -111,4 +111,4 @@ if st.button("Get Answer"):
         st.error("No relevant policy found.")
 
 # Ensure Streamlit runs properly with correct dependencies
-st.write("Ensure you have the correct Python version and all dependencies installed. If issues persist, try updating pip using: \"pip install --upgrade pip\"")
+st.write("Ensure you have the correct Python version and all dependencies installed. If issues persist, try updating pip using: \"pip install --upgrade pip\" and reinstall dependencies with \"pip install -r requirements.txt\"")
