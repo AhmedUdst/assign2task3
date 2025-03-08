@@ -49,7 +49,8 @@ st.write("Enter a prompt to get relevant policies:")
 first_prompt = st.text_input("Enter your first prompt:")
 
 if first_prompt:
-    relevant_policies = [name for name in policy_texts.keys() if name.lower() in first_prompt.lower()]
+    first_prompt_lower = first_prompt.lower()
+    relevant_policies = [name for name in policy_texts.keys() if any(word in first_prompt_lower for word in name.lower().split())]
     
     if relevant_policies:
         st.write("Relevant Policies:")
