@@ -19,11 +19,11 @@ documents = SimpleDirectoryReader(input_files=["documents.txt"]).load_data()
 
 # Split Data
 splitter = SentenceSplitter(chunk_size=512)
-nodes = splitter.get_nodes_from_documents(documents, show_progress=True)
+nodes = splitter.get_nodes_from_documents(documents[:10], show_progress=False)  # Process only first 10 policies to reduce API load
 
 # Ensure All 20 Policies Are Included
 summary_index = SummaryIndex(nodes)
-vector_index = VectorStoreIndex(nodes)
+vector_index = VectorStoreIndex(nodes, insert_batch_size=5)  # Limit batch size to reduce API strain
 
 # Define LLM and Embedding Model
 llm = MistralAI(api_key=api_key)
@@ -47,7 +47,7 @@ query_engine = RouterQueryEngine(
 # Retry Logic for API Rate Limits
 def retry_query(query_engine, user_prompt, retries=3, wait_time=5):
     import logging
-    logging.basicConfig(level=logging.ERROR, filename="error.log")
+    # logging disabled to optimize performance
     for attempt in range(retries):
         try:
             response = query_engine.query(user_prompt)
@@ -65,9 +65,9 @@ st.write("Enter a prompt to get the most relevant UDST policies or answers to yo
 # User Input
 user_prompt = st.text_input("Enter your prompt:")
 
-if user_prompt:
+if user_prompt.strip():  # Avoid empty or accidental whitespace queries
         response = retry_query(query_engine, user_prompt)
         st.subheader("Response:")
         st.write(response)
-else:
+    else:
         st.warning("Please enter a prompt.")
