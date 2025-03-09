@@ -19,11 +19,11 @@ documents = SimpleDirectoryReader(input_files=["documents.txt"]).load_data()
 
 # Split Data
 splitter = SentenceSplitter(chunk_size=512)
-nodes = splitter.get_nodes_from_documents(documents[:10], show_progress=False)  # Process only first 10 policies to reduce API load
+nodes = splitter.get_nodes_from_documents(documents, show_progress=False)  # Process all policies from documents.txt  # Process only first 10 policies to reduce API load
 
 # Ensure All 20 Policies Are Included
 summary_index = SummaryIndex(nodes)
-vector_index = VectorStoreIndex(nodes, insert_batch_size=5)  # Limit batch size to reduce API strain
+vector_index = VectorStoreIndex(nodes, insert_batch_size=10)  # Increase batch size for efficiency  # Limit batch size to reduce API strain
 
 # Define LLM and Embedding Model
 llm = MistralAI(api_key=api_key)
@@ -69,5 +69,5 @@ if user_prompt.strip():  # Avoid empty or accidental whitespace queries
         response = retry_query(query_engine, user_prompt)
         st.subheader("Response:")
         st.write(response)
-else:
+    else:
         st.warning("Please enter a prompt.")
