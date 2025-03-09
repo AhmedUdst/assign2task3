@@ -73,5 +73,5 @@ if user_prompt.strip():  # Avoid empty or accidental whitespace queries
         response = retry_query(query_engine, user_prompt)
         st.subheader("Response:")
         st.write(response)
-    else:
+else:
         st.warning("Please enter a prompt.")
