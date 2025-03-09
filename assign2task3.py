@@ -1,89 +1,58 @@
 import streamlit as st
-import os
-import nest_asyncio
-from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, Settings, Document
+from llama_index.core import SimpleDirectoryReader, SummaryIndex, VectorStoreIndex
+from llama_index.core.node_parser import SentenceSplitter
 from llama_index.llms.mistralai import MistralAI
 from llama_index.embeddings.mistralai import MistralAIEmbedding
-from dotenv import load_dotenv
+from llama_index.core.tools import QueryEngineTool
+from llama_index.core.query_engine.router_query_engine import RouterQueryEngine
+from llama_index.core.selectors import LLMSingleSelector
+import os
 
-# Load environment variables
-os.environ["MISTRAL_API_KEY"] = "WxuATixGO6kp5LQ2ilW1jLRiD5IFibV8"
-load_dotenv()
-MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY")
+# Set API Key
+os.environ["MISTRAL_API_KEY"] = "YOUR_MISTRAL_API_KEY"
+api_key = os.getenv("MISTRAL_API_KEY")
 
-# Apply nest_asyncio (for running async tasks in notebooks if needed)
-nest_asyncio.apply()
+# Load Data
+documents = SimpleDirectoryReader(input_files=["documents.txt"]).load_data()
+
+# Split Data
+splitter = SentenceSplitter(chunk_size=512)
+nodes = splitter.get_nodes_from_documents(documents, show_progress=True)
+
+# Define LLM and Embedding Model
+llm = MistralAI(api_key=api_key)
+embedding_model = MistralAIEmbedding(model_name="mistral-embed", api_key=api_key)
+
+# Create Indexes
+summary_index = SummaryIndex(nodes[:10])
+vector_index = VectorStoreIndex(nodes[:10])
+
+# Define Query Engines
+summary_query_engine = summary_index.as_query_engine(response_mode="tree_summarize", use_async=True)
+vector_query_engine = vector_index.as_query_engine()
+
+# Define Query Engine Tools
+summary_tool = QueryEngineTool.from_defaults(query_engine=summary_query_engine, description="Summarization of UDST policies.")
+vector_tool = QueryEngineTool.from_defaults(query_engine=vector_query_engine, description="Retrieve specific UDST policy information.")
+
+# Define Router Query Engine
+query_engine = RouterQueryEngine(
+    selector=LLMSingleSelector.from_defaults(),
+    query_engine_tools=[summary_tool, vector_tool],
+    verbose=True
+)
 
 # Streamlit UI
-st.title("Agentic RAG with Mistral AI")
+st.title("UDST Policy Information System")
+st.write("Enter a prompt to get the most relevant UDST policies or answers to your questions.")
 
-# Define policy URLs and content (for indexing purposes)
-policy_texts = {
-    "Student Conduct Policy": "This policy governs student behavior and disciplinary actions...",
-    "Academic Schedule Policy": "This policy outlines the academic calendar and scheduling rules...",
-    "Student Attendance Policy": "This policy explains attendance requirements and consequences of absenteeism...",
-    "Student Appeals Policy": "This policy details the process for students to appeal decisions...",
-    "Graduation Policy": "This policy describes graduation requirements and processes...",
-    "Academic Standing Policy": "This policy defines academic performance standards...",
-    "Transfer Policy": "This policy outlines the transfer of credits and student mobility...",
-    "Admissions Policy": "This policy sets the criteria and procedures for student admissions...",
-    "Final Grade Policy": "This policy explains the grading system and final grade calculations...",
-    "Registration Policy": "This policy provides guidelines for course registration and enrollment...",
-}
+# User Input
+user_prompt = st.text_area("Enter your prompt:")
 
-policy_urls = {
-    name: f"https://www.udst.edu.qa/about-udst/institutional-excellence-ie/policies-and-procedures/{name.lower().replace(' ', '-')}"
-    for name in policy_texts.keys()
-}
-
-# Set LLM globally
-Settings.llm = MistralAI(api_key=MISTRAL_API_KEY)
-Settings.embed_model = MistralAIEmbedding(api_key=MISTRAL_API_KEY)
-
-# Create documents for indexing
-documents = [Document(text=policy_texts[name], metadata={"name": name}) for name in policy_texts]
-index = VectorStoreIndex.from_documents(documents)
-query_engine = index.as_query_engine()
-
-# Initialize session state for relevant policies
-if "relevant_policies" not in st.session_state:
-    st.session_state.relevant_policies = []
-    st.session_state.relevant_query_engine = None
-
-st.write("Enter your queries (first question: get relevant policies, subsequent questions: ask about them):")
-user_input = st.text_input("Enter your prompt:")
-
-if user_input:
-    inputs = user_input.split("\n")
-    responses = []
-    
-    for i, query in enumerate(inputs):
-        query = query.strip()
-        if not query:
-            continue
-        
-        if i == 0:
-            # Step 1: Find relevant policies
-            policy_query_lower = query.lower()
-            relevant_policies = [name for name in policy_texts.keys() if policy_query_lower in name.lower()]
-            st.session_state.relevant_policies = relevant_policies
-            
-            if relevant_policies:
-                policy_list = "\n".join([f"- {policy_name}: {policy_urls[policy_name]}" for policy_name in relevant_policies])
-                responses.append(f"**Relevant Policies:**\n{policy_list}")
-                
-                # Create a new query engine only with relevant documents
-                relevant_documents = [Document(text=policy_texts[name], metadata={"name": name}) for name in relevant_policies]
-                st.session_state.relevant_query_engine = VectorStoreIndex.from_documents(relevant_documents).as_query_engine()
-            else:
-                responses.append("No matching policies found.")
-        else:
-            # Step 2: Answer specific policy-related question using previously retrieved policies
-            if st.session_state.relevant_policies and st.session_state.relevant_query_engine:
-                response = st.session_state.relevant_query_engine.query(query)
-                responses.append(f"**Response:** {response.response}")
-            else:
-                responses.append("No relevant policies found to answer this question.")
-    
-    for response in responses:
+if st.button("Submit"):
+    if user_prompt:
+        response = query_engine.query(user_prompt)
+        st.subheader("Response:")
         st.write(response)
+    else:
+        st.warning("Please enter a prompt.")
