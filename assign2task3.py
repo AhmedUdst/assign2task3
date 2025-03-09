@@ -27,7 +27,7 @@ vector_index = VectorStoreIndex(nodes)
 
 # Define LLM and Embedding Model
 llm = MistralAI(api_key=api_key)
-embedding_model = MistralAIEmbedding(model_name="mistral-embed", api_key=api_key)
+embedding_model = MistralAIEmbedding(model_name="mistral-embed-v1", api_key=api_key)
 
 # Define Query Engines
 summary_query_engine = summary_index.as_query_engine(response_mode="tree_summarize", use_async=True)
@@ -46,11 +46,14 @@ query_engine = RouterQueryEngine(
 
 # Retry Logic for API Rate Limits
 def retry_query(query_engine, user_prompt, retries=3, wait_time=5):
+    import logging
+    logging.basicConfig(level=logging.ERROR, filename="error.log")
     for attempt in range(retries):
         try:
             response = query_engine.query(user_prompt)
             return response
         except Exception as e:
+            logging.error(f"Mistral API Error: {str(e)}")
             st.warning(f"API Rate Limit Exceeded. Retrying in {wait_time} seconds...")
             time.sleep(wait_time + random.uniform(0, 2))  # Add jitter
     return "API limit exceeded. Please try again later."
