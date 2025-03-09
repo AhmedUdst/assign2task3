@@ -22,8 +22,8 @@ splitter = SentenceSplitter(chunk_size=512)
 nodes = splitter.get_nodes_from_documents(documents, show_progress=True)
 
 # Ensure All 20 Policies Are Included
-summary_index = SummaryIndex(nodes)
-vector_index = VectorStoreIndex(nodes)
+summary_index = SummaryIndex(nodes[:10])
+vector_index = VectorStoreIndex(nodes[:10])
 
 # Define LLM and Embedding Model
 llm = MistralAI(api_key=api_key)
