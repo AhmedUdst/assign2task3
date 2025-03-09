@@ -11,7 +11,7 @@ from llama_index.core.selectors import LLMSingleSelector
 import os
 
 # Set API Key
-os.environ["MISTRAL_API_KEY"] = "WxuATixGO6kp5LQ2ilW1jLRiD5IFibV8"
+os.environ["MISTRAL_API_KEY"] = "NXyKdE5JFehmTjXn1RtYyVBOlMzPLGyB"
 api_key = os.getenv("MISTRAL_API_KEY")
 
 # Load Data
