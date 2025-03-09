@@ -29,6 +29,10 @@ vector_index = VectorStoreIndex(nodes, insert_batch_size=10)  # Increase batch s
 llm = MistralAI(api_key=api_key)
 embedding_model = MistralAIEmbedding(model_name="mistral-embed-v1", api_key=api_key)
 
+# Ensure Mistral is the default embedding model
+from llama_index.core import Settings
+Settings.embed_model = embedding_model
+
 # Define Query Engines
 summary_query_engine = summary_index.as_query_engine(response_mode="tree_summarize", use_async=True)
 vector_query_engine = vector_index.as_query_engine()
@@ -69,5 +73,5 @@ if user_prompt.strip():  # Avoid empty or accidental whitespace queries
         response = retry_query(query_engine, user_prompt)
         st.subheader("Response:")
         st.write(response)
-else:
+    else:
         st.warning("Please enter a prompt.")
