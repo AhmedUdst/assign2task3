@@ -22,8 +22,8 @@ splitter = SentenceSplitter(chunk_size=512)
 nodes = splitter.get_nodes_from_documents(documents, show_progress=True)
 
 # Ensure All 20 Policies Are Included
-summary_index = SummaryIndex(nodes[:10])
-vector_index = VectorStoreIndex(nodes[:10])
+summary_index = SummaryIndex(nodes)
+vector_index = VectorStoreIndex(nodes)
 
 # Define LLM and Embedding Model
 llm = MistralAI(api_key=api_key)
@@ -60,10 +60,9 @@ st.title("UDST Policy Information System")
 st.write("Enter a prompt to get the most relevant UDST policies or answers to your questions.")
 
 # User Input
-user_prompt = st.text_area("Enter your prompt:")
+user_prompt = st.text_input("Enter your prompt:")
 
-if st.button("Submit"):
-    if user_prompt:
+if user_prompt:
         response = retry_query(query_engine, user_prompt)
         st.subheader("Response:")
         st.write(response)
