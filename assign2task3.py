@@ -362,12 +362,3 @@ for row_index in range(rows):
 </div>
 """, unsafe_allow_html=True)
                 
-# --- Footer ---
-st.markdown(
-    """
-    ---
-    Made with ♥️ by [Ahmed Safari 👨‍💻](https://github.com/ahmed-safari)
-
-    Peak into the code on [GitHub](https://github.com/ahmed-safari/udst-policy-rag) 🚀
-    """
-)
