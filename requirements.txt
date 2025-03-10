@@ -4,3 +4,4 @@ llama-index
 llama-index-llms-mistralai
 llama-index-embeddings-mistralai
 nest_asyncio
+faiss-cpu
