@@ -185,7 +185,7 @@ st.write("Enter your prompt:")
 main_container = st.container()
 with main_container:
     # st.markdown("## 💬 Chat Input")
-    user_query = st.chat_input("Your question about these policies:")
+    user_query = st.text_input("Your question about these policies:")
 
     if user_query:
         if user_query.strip():
