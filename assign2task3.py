@@ -18,7 +18,7 @@ st.set_page_config(
 # -------------------------------
 # Load Data: index + rag_data
 # -------------------------------
-with open("assets/rag_data.pkl", "rb") as f:
+with open("rag_data.pkl", "rb") as f:
     data = pickle.load(f)
 
 valid_chunks = data["chunks"]
@@ -29,7 +29,7 @@ api_key = data["api_key"]
 chunk_embeddings = data.get("chunk_embeddings", None)
 
 # Load FAISS index
-index = faiss.read_index("assets/rag_index.faiss")
+index = faiss.read_index("rag_index.faiss")
 embeddings_dim = index.d
 
 # -------------------------------
@@ -242,7 +242,7 @@ def rag_query(question, k=10):
 
         # Save them to the data dict and rewrite rag_data.pkl
         data["chunk_embeddings"] = chunk_embeddings
-        with open("assets/rag_data.pkl", "wb") as f:
+        with open("rag_data.pkl", "wb") as f:
             pickle.dump(data, f)
 
     # Filter to relevant subset
