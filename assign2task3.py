@@ -300,13 +300,13 @@ Include references to the policy used to get that answer formatted like this: Po
 # -------------------------------
 # UI Layout
 # -------------------------------
-st.title("🎓🤖 UDST Policy Chatbot V2")
+st.write("Enter your queries (first question: get relevant policies, subsequent questions: ask about them):")
 
 # --- Chat box: user enters question here ---
 
 main_container = st.container()
 with main_container:
-    st.markdown("## 💬 Chat Input")
+    # st.markdown("## 💬 Chat Input")
     user_query = st.chat_input("Your question about these policies:")
 
     if user_query:
@@ -328,16 +328,16 @@ with main_container:
             st.warning("Please enter a question first.")
 
 # --- Policies are listed *below* the chat input ---
-st.markdown(
-    """
-    ---
+# st.markdown(
+#     """
+#     ---
 
-## 📚 Policies Available for Reference
-Below is a list of policies that this bot can retrieve information from. 
-Ask your question in the chat input above, and the bot will decide **which policy/policies** 
-are relevant, retrieve the best chunks, and provide an answer.
-"""
-)
+# ## 📚 Policies Available for Reference
+# Below is a list of policies that this bot can retrieve information from. 
+# Ask your question in the chat input above, and the bot will decide **which policy/policies** 
+# are relevant, retrieve the best chunks, and provide an answer.
+# """
+# )
 
 # Show policies in a grid of cards
 col_count = 3  # how many columns per row
