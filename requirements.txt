@@ -1,7 +1,7 @@
 streamlit
-python-dotenv==1.0.0
-llama-index
-llama-index-llms-mistralai
-llama-index-embeddings-mistralai
-nest_asyncio
+requests
+beautifulsoup4
+numpy
 faiss-cpu
+mistralai
+dotenv
