@@ -179,7 +179,7 @@ Include references to the policy used to get that answer formatted like this: Po
 # Streamlit UI
 st.title("Agentic RAG with Mistral AI")
 st.write("Enter your queries (first question: get relevant policies, subsequent questions: ask about them):")
-
+st.write("Enter your prompt:")
 # --- Chat box: user enters question here ---
 
 main_container = st.container()
