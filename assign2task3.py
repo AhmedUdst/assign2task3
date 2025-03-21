@@ -327,47 +327,4 @@ with main_container:
         else:
             st.warning("Please enter a question first.")
 
-# --- Policies are listed *below* the chat input ---
-# st.markdown(
-#     """
-#     ---
 
-# ## 📚 Policies Available for Reference
-# Below is a list of policies that this bot can retrieve information from. 
-# Ask your question in the chat input above, and the bot will decide **which policy/policies** 
-# are relevant, retrieve the best chunks, and provide an answer.
-# """
-# )
-
-# Show policies in a grid of cards
-col_count = 3  # how many columns per row
-rows = math.ceil(len(policies) / col_count)
-
-for row_index in range(rows):
-    columns = st.columns(col_count, gap="small")
-    for col_index in range(col_count):
-        policy_i = row_index * col_count + col_index
-        if policy_i < len(policies):
-            pol = policies[policy_i]
-            with columns[col_index]:
-                st.markdown(f"""
-<div style="border:1px solid #ddd; border-radius:5px; padding:1rem; margin-bottom:1rem;">
-  <h4>{pol["emoji"]} {pol["title"]}</h4>
-  <p style="margin-bottom:0.5rem;">{pol["desc"]}</p>
-  <a href="{pol["url"]}" target="_blank">
-    <button style="background-color: #0055b8; color: white; padding: 10px 24px; border: none; border-radius: 4px; cursor: pointer; width:100%">
-      Read Policy
-    </button>
-  </a>
-</div>
-""", unsafe_allow_html=True)
-                
-# --- Footer ---
-st.markdown(
-    """
-    ---
-    Made with ♥️ by [Ahmed Safari 👨‍💻](https://github.com/ahmed-safari)
-
-    Peak into the code on [GitHub](https://github.com/ahmed-safari/udst-policy-rag) 🚀
-    """
-)
