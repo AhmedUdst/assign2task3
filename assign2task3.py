@@ -23,7 +23,7 @@ with open("rag_data.pkl", "rb") as f:
 
 valid_chunks = data["chunks"]
 valid_sources = data["sources"]
-api_key = data["api_key"]
+api_key = data["api_key-"]
 
 # If we stored chunk_embeddings, retrieve them. Otherwise, we'll re-embed on the fly
 chunk_embeddings = data.get("chunk_embeddings", None)
